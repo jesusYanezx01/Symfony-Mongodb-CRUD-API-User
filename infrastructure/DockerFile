@@ -1,0 +1,42 @@
+FROM php:8.2-fpm
+
+# Instalar Symfony
+RUN curl -sS https://get.symfony.com/cli/installer | bash \
+    && mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
+
+# Instalar dependencias y herramientas adicionales
+RUN apt-get update && apt-get install -y \
+        git \
+        unzip \
+        sudo \
+        libzip-dev \
+        openssh-server \
+        libssl-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install zip
+
+# Instalar extensión de PHP para MongoDB
+RUN pecl install mongodb \
+    && docker-php-ext-enable mongodb
+
+# Crear un nuevo usuario llamado usernew
+RUN useradd -m usernew && \
+    echo 'usernew:user' | chpasswd && \
+    usermod -aG sudo usernew && \
+    usermod -s /bin/bash usernew
+
+# Instalar Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Directorio de trabajo
+WORKDIR /var/www/html
+
+# Copiar archivos de la aplicación
+COPY .. /var/www/html
+
+
+# Cambiar al usuario www-data (o el usuario no root que estés utilizando en tu imagen)
+USER usernew
+
+# Comando por defecto al iniciar el contenedor
+CMD ["php-fpm"]
