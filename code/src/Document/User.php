@@ -4,20 +4,24 @@ namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Doctrine\ODM\MongoDB\Types\Type as Type;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[MongoDB\Document(collection: "user")]
 class User
 {
     #[MongoDB\Id]
+    #[Groups(['user:read'])]
     private $id;
 
     #[MongoDB\Field(type: Type::STRING)]
     #[Assert\NotBlank(message: "Nombre no puede estar vacio")]
+    #[Groups(['user:read'])]
     private $name;
 
     #[MongoDB\Field(type: Type::STRING)]
     #[Assert\NotBlank(message: "Apellido no puede estar vacio")]
+    #[Groups(['user:read'])]
     private $lastName;
 
     #[MongoDB\Field(type: Type::INT)]
@@ -25,6 +29,7 @@ class User
     #[Assert\GreaterThanOrEqual(
         value: 18, message: ("Tienes que ser +18 para poder registrarte")
     )]
+    #[Groups(['user:read'])]
     private $age;
 
     public function getId()
